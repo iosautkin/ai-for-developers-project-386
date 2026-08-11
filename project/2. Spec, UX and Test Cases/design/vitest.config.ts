@@ -8,6 +8,9 @@ import { defineConfig } from 'vitest/config';
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  optimizeDeps: {
+    include: ['dayjs/locale/ru'],
+  },
   test: {
     projects: [
       {

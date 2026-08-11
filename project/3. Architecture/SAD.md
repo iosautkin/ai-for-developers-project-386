@@ -43,7 +43,7 @@ flowchart LR
 
 ## 4. Слои документации и кода
 
-- Слой 2 содержит `UIElements.d.ts`, будущие Gherkin-сценарии и Storybook-дизайн. Storybook заменяет Figma.
+- Слой 2 содержит `UIElements.ts`, Gherkin-сценарии и Storybook-дизайн. Storybook заменяет Figma.
 - Слой 3 содержит этот SAD, TypeSpec и сгенерированный OpenAPI.
 - Слой 4 содержит frontend, backend, e2e и общий generated API package.
 - Контракт каждого собственного production TypeScript-модуля хранится рядом с реализацией как `*.contract.d.ts`.

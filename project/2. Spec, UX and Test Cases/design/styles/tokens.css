@@ -1,0 +1,16 @@
+:root {
+  --calendar-color-navy: #13213c;
+  --calendar-color-muted: #66738a;
+  --calendar-color-border: #dce3ee;
+  --calendar-color-surface: #ffffff;
+  --calendar-color-canvas: #f5f7fb;
+  --calendar-color-blue-soft: #e8f0ff;
+  --calendar-color-orange: #f76707;
+  --calendar-color-orange-soft: #fff0e6;
+  --calendar-shadow-card: 0 18px 50px rgb(19 33 60 / 8%);
+  --calendar-content-width: 1180px;
+}
+
+body {
+  background: var(--calendar-color-canvas);
+}

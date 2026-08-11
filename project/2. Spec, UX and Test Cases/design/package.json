@@ -10,11 +10,16 @@
   },
   "dependencies": {
     "@mantine/core": "9.5.1",
+    "@mantine/dates": "9.5.1",
+    "@mantine/form": "9.5.1",
     "@mantine/hooks": "9.5.1",
+    "@tabler/icons-react": "3.46.0",
+    "dayjs": "1.11.21",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@storybook/addon-docs": "10.5.5",
     "@storybook/addon-vitest": "10.5.5",
     "@storybook/react-vite": "10.5.5",
     "@types/react": "19.2.14",
