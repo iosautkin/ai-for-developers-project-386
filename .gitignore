@@ -1,0 +1,22 @@
+node_modules/
+dist/
+coverage/
+.cache/
+.turbo/
+storybook-static/
+test-results/
+playwright-report/
+.playwright-bdd/
+.features-gen/
+*.log
+
+# Runtime data
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Environment overrides
+.env
+.env.*
+!.env.example

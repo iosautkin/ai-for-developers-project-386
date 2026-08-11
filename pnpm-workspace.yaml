@@ -1,0 +1,12 @@
+packages:
+  - 'project/2. Spec, UX and Test Cases/design'
+  - 'project/3. Architecture/api'
+  - 'project/4. Implementation/frontend'
+  - 'project/4. Implementation/backend'
+  - 'project/4. Implementation/shared/*'
+  - 'project/4. Implementation/e2e'
+
+allowBuilds:
+  '@scarf/scarf': false
+  better-sqlite3: true
+  esbuild: true

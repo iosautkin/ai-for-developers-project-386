@@ -1,0 +1,14 @@
+.git
+node_modules
+.pnpm-store
+**/node_modules
+**/dist
+**/coverage
+**/storybook-static
+**/test-results
+**/playwright-report
+**/.features-gen
+data
+*.db
+*.db-shm
+*.db-wal

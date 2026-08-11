@@ -1,0 +1,14 @@
+{
+  "name": "@calendar/e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "bddgen && playwright test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "playwright-bdd": "9.2.0",
+    "typescript": "6.0.3"
+  }
+}

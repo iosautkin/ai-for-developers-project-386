@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    ".github/workflows/hexlet-check.yml",
+    "AGENTS.md",
+    "README.md",
+    "pnpm-lock.yaml",
+    "project/0. Context/**",
+    "project/1. Vision and Product/**",
+    "**/generated/**",
+    "**/dist/**",
+    "**/storybook-static/**",
+    "**/.playwright-bdd/**",
+    "**/.features-gen/**"
+  ],
+  "printWidth": 100,
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "all"
+}

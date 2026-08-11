@@ -1,0 +1,36 @@
+{
+  "name": "ai-for-developers-project",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm codegen && pnpm --filter @calendar/api-contract build && pnpm --filter @calendar/frontend build && pnpm --filter @calendar/backend build",
+    "build:storybook": "pnpm --filter @calendar/design build",
+    "codegen": "pnpm codegen:typespec && pnpm codegen:client",
+    "codegen:typespec": "pnpm --filter @calendar/api-spec build",
+    "codegen:client": "orval --config orval.config.ts",
+    "dev": "pnpm codegen && pnpm --filter @calendar/api-contract build && pnpm --parallel --filter @calendar/backend --filter @calendar/frontend dev",
+    "dev:mock": "pnpm --parallel --filter @calendar/api-spec --filter @calendar/frontend dev:mock",
+    "format": "oxfmt --check .",
+    "format:write": "oxfmt --write .",
+    "lint": "oxlint .",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm --filter @calendar/api-contract build && pnpm -r --if-present test",
+    "test:storybook": "pnpm --filter @calendar/design test:storybook",
+    "test:e2e": "pnpm --filter @calendar/e2e test:e2e",
+    "test:docker": "docker build -t calendar-foundation:smoke . && sh ./scripts/docker-smoke.sh calendar-foundation:smoke",
+    "verify": "pnpm codegen && pnpm format && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@stoplight/prism-cli": "5.16.0",
+    "@types/node": "24.13.3",
+    "orval": "8.23.0",
+    "oxfmt": "0.61.0",
+    "oxlint": "1.76.0",
+    "tsx": "4.23.5",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@11.9.0"
+}

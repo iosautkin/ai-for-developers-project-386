@@ -1,0 +1,30 @@
+openapi: 3.0.0
+info:
+  title: Calendar technical foundation API
+  version: 0.0.0
+tags: []
+paths:
+  /api/health:
+    get:
+      operationId: getHealth
+      description: Reports whether the HTTP process and its SQLite dependency are ready.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+      description: Infrastructure response used to verify the contract and runtime pipeline.

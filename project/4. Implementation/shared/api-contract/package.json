@@ -1,0 +1,22 @@
+{
+  "name": "@calendar/api-contract",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./schemas": {
+      "types": "./src/generated/zod/schemas.ts",
+      "default": "./dist/generated/zod/schemas.js"
+    },
+    "./models/*": "./src/generated/models/*"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  }
+}
