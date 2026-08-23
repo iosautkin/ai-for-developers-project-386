@@ -1,14 +1,15 @@
-import { GetHealthResponse } from '@calendar/api-contract/schemas';
+import { GetHealth200Response, GetHealth500Response } from '@calendar/api-contract/schemas';
 
-import type { RegisterHealthRoute } from './health.route.contract.js';
+import { HEALTH_ROUTE_PATH, type RegisterHealthRoute } from './health.route.contract.js';
 
 export const registerHealthRoute: RegisterHealthRoute = (app) => {
   app.get(
-    '/api/health',
+    HEALTH_ROUTE_PATH,
     {
       schema: {
         response: {
-          200: GetHealthResponse,
+          200: GetHealth200Response,
+          500: GetHealth500Response,
         },
       },
     },

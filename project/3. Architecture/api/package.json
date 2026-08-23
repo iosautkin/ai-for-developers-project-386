@@ -1,5 +1,6 @@
 {
   "name": "@calendar/api-spec",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +11,7 @@
   "dependencies": {
     "@typespec/compiler": "1.14.0",
     "@typespec/http": "1.14.0",
+    "@typespec/openapi": "1.14.0",
     "@typespec/openapi3": "1.14.0"
   }
 }
