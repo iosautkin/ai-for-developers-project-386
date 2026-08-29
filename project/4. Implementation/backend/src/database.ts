@@ -2,7 +2,11 @@ import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 
-import { SQLITE_BUSY_TIMEOUT_MILLISECONDS, type OpenDatabase } from './database.contract.js';
+import {
+  SQLITE_BUSY_TIMEOUT_MILLISECONDS,
+  databaseSchema,
+  type OpenDatabase,
+} from './database.contract.js';
 
 export const openDatabase: OpenDatabase = (databasePath, migrationsDirectory) => {
   const sqlite = new Database(databasePath);
@@ -10,7 +14,7 @@ export const openDatabase: OpenDatabase = (databasePath, migrationsDirectory) =>
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma(`busy_timeout = ${SQLITE_BUSY_TIMEOUT_MILLISECONDS}`);
 
-  const orm = drizzle(sqlite);
+  const orm = drizzle(sqlite, { schema: databaseSchema });
   migrate(orm, { migrationsFolder: migrationsDirectory });
 
   return {

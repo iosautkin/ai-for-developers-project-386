@@ -1,5 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 
+import type { Clock } from './calendar.service.contract.js';
+
 /**
  * Fastify composition root.
  *
@@ -16,6 +18,8 @@ export interface BuildAppOptions {
   readonly migrationsDirectory?: string | undefined;
   /** Built frontend directory served by Fastify when it exists. */
   readonly staticDirectory?: string | undefined;
+  /** Backend clock; defaults to the real current time and is fixed only by deterministic tests. */
+  readonly now?: Clock | undefined;
 }
 
 /** Builds one Fastify instance and transfers ownership of its resources to that instance. */

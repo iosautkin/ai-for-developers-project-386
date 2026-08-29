@@ -1,5 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 
+import type { DatabaseConnection } from './database.contract.js';
+
 /**
  * Infrastructure readiness route.
  *
@@ -13,4 +15,5 @@ export const HEALTH_ROUTE_PATH = '/api/health';
 /** Registers the readiness endpoint on an existing Fastify instance. */
 export type RegisterHealthRoute = (
   app: FastifyInstance, // application instance that owns the registered route
+  database: DatabaseConnection, // live SQLite connection checked by the handler
 ) => void;
