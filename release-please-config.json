@@ -1,0 +1,9 @@
+{
+  "packages": {
+    ".": {
+      "changelog-path": "CHANGELOG.md",
+      "package-name": "calendar-calls",
+      "release-type": "node"
+    }
+  }
+}
