@@ -13,7 +13,7 @@
     "format": "oxfmt --check .",
     "format:write": "oxfmt --write .",
     "lint": "oxlint .",
-    "typecheck": "pnpm -r --if-present typecheck",
+    "typecheck": "pnpm --filter @calendar/api-contract build && pnpm --filter @calendar/backend build && pnpm -r --if-present typecheck",
     "test": "pnpm --filter @calendar/api-contract build && pnpm -r --if-present test",
     "test:storybook": "pnpm --filter @calendar/design test:storybook",
     "test:e2e": "pnpm --filter @calendar/e2e test:e2e",
