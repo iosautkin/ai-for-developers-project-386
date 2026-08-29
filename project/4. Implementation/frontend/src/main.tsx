@@ -5,7 +5,7 @@ import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Route, Routes } from 'react-router';
+import { BrowserRouter } from 'react-router';
 
 import { App } from './App';
 import { APPLICATION_ROOT_SELECTOR, type MountApplication } from './main.contract';
@@ -23,9 +23,7 @@ export const mountApplication: MountApplication = () => {
       <MantineProvider>
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
-            <Routes>
-              <Route element={<App />} path="*" />
-            </Routes>
+            <App />
           </BrowserRouter>
         </QueryClientProvider>
       </MantineProvider>

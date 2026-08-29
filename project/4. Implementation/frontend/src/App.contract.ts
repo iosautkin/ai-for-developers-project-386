@@ -1,11 +1,59 @@
+import type { Booking } from '../../shared/api-contract/src/generated/models/booking.js';
 import type { ComponentType } from 'react';
 
 /**
- * Technical frontend shell shown before product screens are implemented.
+ * Product UI composition for the calendar application.
  *
- * The component has no local state. It reads health as server state through the generated query
- * hook and renders mutually exclusive loading, ready and unavailable states with Mantine.
+ * The module keeps only transient navigation and form state in React. Meeting types, availability
+ * and bookings remain backend-owned server state and are read or changed through generated API
+ * hooks. Routes cover the guest booking flow and the owner screens described by layer 2.
  */
 
-/** React component contract for the technical application shell. */
+/** IANA zone used whenever a backend UTC instant is presented to product users. */
+export const MOSCOW_TIME_ZONE = 'Europe/Moscow';
+
+/** Stable application paths shared by navigation and route declarations. */
+export const APP_PATHS = {
+  home: '/',
+  catalog: '/book',
+  adminMeetingTypes: '/admin',
+  adminCreateMeetingType: '/admin/meeting-types/new',
+  adminBookings: '/admin/bookings',
+} as const;
+
+/** Builds the public slot-selection URL for a meeting type supplied by the API. */
+export const bookingPath = (meetingTypeId: string) => `/book/${encodeURIComponent(meetingTypeId)}`;
+
+/** Builds the guest-details URL without moving the selected UTC instant into client state. */
+export const guestDetailsPath = (meetingTypeId: string, startsAt: string) =>
+  `${bookingPath(meetingTypeId)}/details?startsAt=${encodeURIComponent(startsAt)}`;
+
+/** Formats an API UTC instant as a Moscow calendar date for the user interface. */
+export const formatMoscowDate = (instant: string) =>
+  new Intl.DateTimeFormat('ru-RU', {
+    dateStyle: 'long',
+    timeZone: MOSCOW_TIME_ZONE,
+  }).format(new Date(instant));
+
+/** Formats a backend UTC interval as a compact Moscow time range. */
+export const formatMoscowTimeRange = (startsAt: string, endsAt: string) => {
+  const formatter = new Intl.DateTimeFormat('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: MOSCOW_TIME_ZONE,
+  });
+  return `${formatter.format(new Date(startsAt))}–${formatter.format(new Date(endsAt))}`;
+};
+
+/** Fails closed if generated response unions ever expose a non-success envelope to UI code. */
+export const failUnexpectedStatus = (status: number): never => {
+  throw new Error(`Unexpected API status ${status}`);
+};
+
+/** State passed to the confirmation route after the backend has persisted a booking. */
+export interface BookingSuccessState {
+  readonly booking: Booking;
+}
+
+/** Root React component that declares all product routes. */
 export type AppComponent = ComponentType;
