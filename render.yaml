@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: ai-for-developers-calendar-386
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    autoDeployTrigger: checksPass

@@ -5,6 +5,7 @@ ENV PATH=$PNPM_HOME:$PATH
 
 WORKDIR /app
 RUN corepack enable
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++
 
 COPY . .
 RUN pnpm install --frozen-lockfile
