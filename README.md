@@ -34,5 +34,12 @@ Production smoke-тест собирает образ, запускает его
 pnpm test:docker
 ```
 
+## Публичная версия
+
+Учебный стенд: [ai-for-developers-calendar-386.onrender.com](https://ai-for-developers-calendar-386.onrender.com/).
+Бесплатный Render instance может засыпать при отсутствии запросов, а его файловая система
+сбрасывается при redeploy. Для постоянного локального хранения используется Docker volume из
+предыдущего раздела.
+
 Коммиты оформляются по Conventional Commits (`feat:`, `fix:`, `docs:` и другие). После изменений в
 `main` release-please автоматически создаёт или обновляет release PR с версией и changelog.
