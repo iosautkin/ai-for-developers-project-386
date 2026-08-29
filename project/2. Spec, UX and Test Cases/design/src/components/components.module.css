@@ -60,6 +60,13 @@
   justify-content: space-between;
 }
 
+.slotList {
+  max-height: 378px;
+  overflow-y: auto;
+  padding-right: 4px;
+  overscroll-behavior: contain;
+}
+
 .slotButton :global(.mantine-Button-label) {
   width: 100%;
   justify-content: space-between;

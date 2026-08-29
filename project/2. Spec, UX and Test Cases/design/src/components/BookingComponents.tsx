@@ -118,7 +118,7 @@ export function SlotList({ onSelect, selectedSlotId, slots }: SlotListProps) {
     >
       <Stack gap="md">
         <Title order={3}>Доступное время</Title>
-        <Stack gap="xs">
+        <Stack className={classes.slotList} gap="xs">
           {slots.map((slot) => {
             const occupied = slot.status === 'occupied';
             const selected = selectedSlotId === slot.id;

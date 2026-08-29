@@ -31,7 +31,6 @@ export const registerBookingsRoutes: RegisterBookingsRoutes = (app, service) => 
         request.body = {
           ...body,
           guest: {
-            ...body.guest,
             name: trim(body.guest?.name),
             email:
               typeof body.guest?.email === 'string'

@@ -28,12 +28,23 @@ export const bookingPath = (meetingTypeId: string) => `/book/${encodeURIComponen
 export const guestDetailsPath = (meetingTypeId: string, startsAt: string) =>
   `${bookingPath(meetingTypeId)}/details?startsAt=${encodeURIComponent(startsAt)}`;
 
-/** Formats an API UTC instant as a Moscow calendar date for the user interface. */
-export const formatMoscowDate = (instant: string) =>
-  new Intl.DateTimeFormat('ru-RU', {
-    dateStyle: 'long',
+/** Formats an API UTC instant as a Moscow calendar date followed by its weekday. */
+export const formatMoscowDate = (instant: string) => {
+  const date = new Date(instant);
+  const dateLabel = new Intl.DateTimeFormat('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
     timeZone: MOSCOW_TIME_ZONE,
-  }).format(new Date(instant));
+  })
+    .format(date)
+    .replace(' г.', '');
+  const weekday = new Intl.DateTimeFormat('ru-RU', {
+    timeZone: MOSCOW_TIME_ZONE,
+    weekday: 'long',
+  }).format(date);
+  return `${dateLabel}, ${weekday}`;
+};
 
 /** Formats a backend UTC interval as a compact Moscow time range. */
 export const formatMoscowTimeRange = (startsAt: string, endsAt: string) => {

@@ -2,7 +2,8 @@ import { defineConfig } from '@playwright/test';
 import { defineBddConfig } from 'playwright-bdd';
 
 const testDirectory = defineBddConfig({
-  features: 'features/**/*.feature',
+  features: '../../2. Spec, UX and Test Cases/features/**/*.feature',
+  featuresRoot: '../../2. Spec, UX and Test Cases/features',
   steps: 'steps/**/*.ts',
 });
 

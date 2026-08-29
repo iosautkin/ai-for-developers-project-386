@@ -14,7 +14,7 @@
     Тогда отображается UIElements.ADMIN_MEETING_TYPE_CREATED_NOTIFICATION
     И UIElements.ADMIN_MEETING_TYPES_LIST содержит созданный тип
 
-  @SCN-ADMIN-TYPE-002
+  @SCN-ADMIN-TYPE-002 @e2e
   Структура сценария: Валидация типа встречи
     Дано владелец находится на UIElements.ADMIN_CREATE_MEETING_TYPE_SCREEN
     Когда владелец вводит "<id>" в UIElements.ADMIN_MEETING_TYPE_ID_INPUT
@@ -38,7 +38,7 @@
     Когда гость открывает UIElements.CATALOG_SCREEN
     Тогда UIElements.CATALOG_MEETING_TYPE_LIST содержит новый тип встречи
 
-  @SCN-ADMIN-TYPE-004
+  @SCN-ADMIN-TYPE-004 @e2e
   Сценарий: Идентификатор типа встречи должен быть уникальным
     Дано тип встречи с идентификатором "consultation" уже существует
     Когда владелец вводит "consultation" в UIElements.ADMIN_MEETING_TYPE_ID_INPUT

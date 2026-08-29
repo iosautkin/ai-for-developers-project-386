@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@design': fileURLToPath(
-          new URL('../../2. Spec, UX and Test Cases/design/styles', import.meta.url),
+          new URL('../../2. Spec, UX and Test Cases/design', import.meta.url),
         ),
       },
     },

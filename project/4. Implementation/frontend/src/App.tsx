@@ -1,15 +1,12 @@
 import {
   Alert,
-  Anchor,
-  AppShell,
   Badge,
+  Box,
   Button,
-  Card,
   Center,
-  Container,
+  Divider,
   Group,
   Loader,
-  NavLink,
   NumberInput,
   Paper,
   SimpleGrid,
@@ -19,9 +16,24 @@ import {
   TextInput,
   ThemeIcon,
   Title,
+  UnstyledButton,
 } from '@mantine/core';
+import { DatePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
-import { IconArrowRight, IconCheck, IconClock, IconPlus } from '@tabler/icons-react';
+import {
+  IconAlertCircle,
+  IconArrowRight,
+  IconCalendarCheck,
+  IconCalendarEvent,
+  IconCheck,
+  IconCircleCheck,
+  IconClock,
+  IconInbox,
+  IconMail,
+  IconMapPin,
+  IconPlus,
+  IconUser,
+} from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Link,
@@ -33,6 +45,9 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router';
+
+import componentClasses from '@design/src/components/components.module.css';
+import screenClasses from '@design/src/screens/screens.module.css';
 
 import { UIElements } from '../../../2. Spec, UX and Test Cases/UIElements';
 import type { AvailabilityResponse } from '../../shared/api-contract/src/generated/models/availabilityResponse';
@@ -66,75 +81,170 @@ import {
   type BookingSuccessState,
 } from './App.contract';
 
-import classes from './App.module.css';
-
 function Header() {
+  const { pathname } = useLocation();
+  const active = pathname.startsWith('/admin')
+    ? 'admin'
+    : pathname.startsWith('/book')
+      ? 'public'
+      : undefined;
+
   return (
-    <AppShell.Header className={classes.header} data-testid={UIElements.APP_HEADER}>
-      <Group h="100%" justify="space-between">
-        <Anchor
-          className={classes.logo}
+    <Box component="header" className={componentClasses.header} data-testid={UIElements.APP_HEADER}>
+      <div className={componentClasses.headerInner}>
+        <Button
+          className={componentClasses.brand}
+          color="dark"
           component={Link}
           data-testid={UIElements.APP_LOGO_LINK}
+          leftSection={<IconCalendarEvent size={21} stroke={2.2} />}
           to={APP_PATHS.home}
-          underline="never"
+          variant="transparent"
         >
-          Календарь звонков
-        </Anchor>
-        <Group gap="xs">
+          <span>
+            Календарь<span className={componentClasses.brandSuffix}> звонков</span>
+          </span>
+        </Button>
+        <Group gap="xs" wrap="nowrap">
           <Button
+            color={active === 'public' ? 'orange' : 'gray'}
             component={Link}
             data-testid={UIElements.PUBLIC_BOOK_NAV_LINK}
             to={APP_PATHS.catalog}
-            variant="subtle"
+            variant={active === 'public' ? 'light' : 'subtle'}
           >
             Записаться
           </Button>
           <Button
+            color={active === 'admin' ? 'orange' : 'gray'}
             component={Link}
             data-testid={UIElements.ADMIN_NAV_LINK}
             to={APP_PATHS.adminMeetingTypes}
-            variant="default"
+            variant={active === 'admin' ? 'light' : 'subtle'}
           >
-            Владелец
+            Админка
           </Button>
         </Group>
-      </Group>
-    </AppShell.Header>
+      </div>
+    </Box>
   );
 }
 
 function Page({ children }: { readonly children: React.ReactNode }) {
   return (
-    <AppShell header={{ height: 72 }}>
+    <div className={screenClasses.page}>
       <Header />
-      <AppShell.Main>{children}</AppShell.Main>
-    </AppShell>
+      {children}
+    </div>
   );
 }
 
-function Loading({ testId }: { readonly testId?: string }) {
+function Loading({ testId, label = 'Загружаем данные…' }: { testId?: string; label?: string }) {
   return (
-    <Center className={classes.statePanel} data-testid={testId}>
-      <Loader color="orange" />
+    <Center className={screenClasses.loadingPanel} data-testid={testId}>
+      <Stack align="center" gap="sm">
+        <Loader color="orange" />
+        <Text c="dimmed">{label}</Text>
+      </Stack>
     </Center>
   );
 }
 
+function EmptyState({
+  actionLabel,
+  description,
+  onAction,
+  testId,
+  title,
+}: {
+  readonly title: string;
+  readonly description?: string;
+  readonly testId: UIElements;
+  readonly actionLabel?: string;
+  readonly onAction?: () => void;
+}) {
+  return (
+    <Paper className={componentClasses.emptyState} data-testid={testId} p="xl" radius="lg">
+      <Center>
+        <Stack align="center" gap="sm" maw={440} ta="center">
+          <ThemeIcon color="gray" radius="xl" size={48} variant="light">
+            <IconInbox size={24} />
+          </ThemeIcon>
+          <Title order={3}>{title}</Title>
+          {description ? <Text c="dimmed">{description}</Text> : null}
+          {actionLabel ? (
+            <Button color="orange" onClick={onAction}>
+              {actionLabel}
+            </Button>
+          ) : null}
+        </Stack>
+      </Center>
+    </Paper>
+  );
+}
+
+function StatusAlert({
+  actionLabel,
+  actionTestId,
+  kind,
+  message,
+  onAction,
+  testId,
+}: {
+  readonly kind: 'success' | 'error' | 'conflict';
+  readonly message: string;
+  readonly testId: UIElements;
+  readonly actionLabel?: string;
+  readonly actionTestId?: UIElements;
+  readonly onAction?: () => void;
+}) {
+  const success = kind === 'success';
+  return (
+    <Alert
+      color={success ? 'green' : kind === 'conflict' ? 'orange' : 'red'}
+      data-testid={testId}
+      icon={success ? <IconCircleCheck size={19} /> : <IconAlertCircle size={19} />}
+      radius="md"
+      title={success ? 'Готово' : kind === 'conflict' ? 'Время недоступно' : 'Что-то пошло не так'}
+    >
+      <Stack gap="sm">
+        <Text size="sm">{message}</Text>
+        {actionLabel ? (
+          <Button
+            color={success ? 'green' : 'red'}
+            data-testid={actionTestId}
+            onClick={onAction}
+            size="xs"
+            variant="light"
+          >
+            {actionLabel}
+          </Button>
+        ) : null}
+      </Stack>
+    </Alert>
+  );
+}
+
 function HomeScreen() {
+  const steps = [
+    ['1', 'Выберите формат', 'От короткого знакомства до подробной консультации.'],
+    ['2', 'Найдите время', 'Свободные интервалы показаны по Москве.'],
+    ['3', 'Подтвердите запись', 'Оставьте имя и email — без регистрации.'],
+  ] as const;
+
   return (
     <Page>
-      <Container className={classes.main} data-testid={UIElements.HOME_SCREEN} size="lg">
-        <section className={classes.hero}>
+      <main className={screenClasses.main} data-testid={UIElements.HOME_SCREEN}>
+        <section className={screenClasses.hero}>
           <Stack align="flex-start" gap="xl">
-            <Badge color="orange" size="lg" variant="light">
+            <Badge color="blue" size="lg" variant="light">
               Простой календарь для звонков
             </Badge>
-            <Title className={classes.heroTitle} order={1}>
-              Запланируйте звонок <span>без переписки</span>
+            <Title className={screenClasses.heroTitle} order={1}>
+              Запланируйте звонок <span className={screenClasses.heroAccent}>без переписки</span>
             </Title>
             <Text c="dimmed" maw={620} size="xl">
-              Выберите формат встречи и удобное время по Москве — регистрация не нужна.
+              Выберите формат встречи и удобное время по Москве.
             </Text>
             <Button
               color="orange"
@@ -148,46 +258,70 @@ function HomeScreen() {
             </Button>
           </Stack>
           <Paper
-            className={classes.featurePanel}
+            className={screenClasses.featurePanel}
             data-testid={UIElements.HOME_FEATURES_PANEL}
             p="xl"
             radius="xl"
           >
-            {['Выберите формат', 'Найдите свободное время', 'Подтвердите запись'].map(
-              (title, index) => (
-                <Group align="center" key={title} mb={index === 2 ? 0 : 'xl'} wrap="nowrap">
-                  <ThemeIcon color="orange" radius="xl" size="xl">
-                    {index + 1}
+            <Stack gap="xl">
+              {steps.map(([number, title, description]) => (
+                <Group align="flex-start" key={number} wrap="nowrap">
+                  <ThemeIcon
+                    className={screenClasses.stepNumber}
+                    color="orange"
+                    radius="xl"
+                    size="xl"
+                  >
+                    {number}
                   </ThemeIcon>
-                  <Text fw={700}>{title}</Text>
+                  <div>
+                    <Text fw={700} size="lg">
+                      {title}
+                    </Text>
+                    <Text c="dimmed" mt={3}>
+                      {description}
+                    </Text>
+                  </div>
                 </Group>
-              ),
-            )}
+              ))}
+            </Stack>
           </Paper>
         </section>
-      </Container>
+      </main>
     </Page>
   );
 }
 
 function MeetingTypeCard({ meetingType }: { readonly meetingType: MeetingType }) {
   return (
-    <Card data-testid={UIElements.CATALOG_MEETING_TYPE_CARD} padding="xl" radius="lg" withBorder>
-      <Stack h="100%" gap="md">
-        <Group justify="space-between">
-          <Title order={2}>{meetingType.title}</Title>
-          <Badge color="orange" size="lg" variant="light">
-            {meetingType.durationMinutes} мин
-          </Badge>
-        </Group>
-        <Text c="dimmed" className={classes.grow}>
-          {meetingType.description}
-        </Text>
-        <Button component={Link} to={bookingPath(meetingType.id)}>
-          Выбрать время
-        </Button>
-      </Stack>
-    </Card>
+    <Paper className={componentClasses.meetingCard} p="lg" radius="lg" withBorder>
+      <UnstyledButton
+        className={componentClasses.cardButton}
+        component={Link}
+        data-testid={UIElements.CATALOG_MEETING_TYPE_CARD}
+        to={bookingPath(meetingType.id)}
+      >
+        <Stack gap="md">
+          <Group align="flex-start" justify="space-between" wrap="nowrap">
+            <div>
+              <Title order={3}>{meetingType.title}</Title>
+              <Text c="dimmed" mt={6} size="sm">
+                {meetingType.description}
+              </Text>
+            </div>
+            <Badge color="orange" leftSection={<IconClock size={13} />} variant="light">
+              {meetingType.durationMinutes} мин
+            </Badge>
+          </Group>
+          <Group c="orange.8" gap={5}>
+            <Text fw={600} size="sm">
+              Выбрать время
+            </Text>
+            <IconArrowRight size={16} />
+          </Group>
+        </Stack>
+      </UnstyledButton>
+    </Paper>
   );
 }
 
@@ -195,6 +329,7 @@ function CatalogScreen() {
   const meetingTypes = useListMeetingTypes<MeetingType[]>({
     query: {
       queryKey: getListMeetingTypesQueryKey(),
+      retry: false,
       select: (response) =>
         response.status === 200 ? response.data : failUnexpectedStatus(response.status),
     },
@@ -202,56 +337,92 @@ function CatalogScreen() {
 
   return (
     <Page>
-      <Container className={classes.main} data-testid={UIElements.CATALOG_SCREEN} size="lg">
-        <Title data-testid={UIElements.CATALOG_HEADING} order={1}>
-          Выберите тип встречи
-        </Title>
-        <Text c="dimmed" mt="xs">
-          Все доступные форматы календаря Ивана.
-        </Text>
-        {meetingTypes.isPending ? <Loading testId={UIElements.CATALOG_LOADING} /> : null}
+      <main className={screenClasses.main} data-testid={UIElements.CATALOG_SCREEN}>
+        <div className={screenClasses.sectionHeader}>
+          <Badge color="orange" variant="light">
+            Каталог
+          </Badge>
+          <Title data-testid={UIElements.CATALOG_HEADING} mt="sm" order={1}>
+            Выберите тип встречи
+          </Title>
+          <Text c="dimmed" mt={8}>
+            Каждый вариант показывает длительность и назначение звонка.
+          </Text>
+        </div>
+        {meetingTypes.isPending ? (
+          <Loading label="Загружаем типы встреч…" testId={UIElements.CATALOG_LOADING} />
+        ) : null}
         {meetingTypes.isError ? (
-          <Alert color="red" data-testid={UIElements.CATALOG_ERROR_ALERT} mt="xl" title="Ошибка">
-            <Group justify="space-between">
-              <Text>Не удалось загрузить типы встреч.</Text>
-              <Button
-                data-testid={UIElements.CATALOG_RETRY_BUTTON}
-                onClick={() => meetingTypes.refetch()}
-                size="xs"
-              >
-                Повторить
-              </Button>
-            </Group>
-          </Alert>
+          <StatusAlert
+            actionLabel="Повторить"
+            actionTestId={UIElements.CATALOG_RETRY_BUTTON}
+            kind="error"
+            message="Не удалось загрузить данные"
+            onAction={() => void meetingTypes.refetch()}
+            testId={UIElements.CATALOG_ERROR_ALERT}
+          />
         ) : null}
         {meetingTypes.data?.length === 0 ? (
-          <Paper
-            className={classes.statePanel}
-            data-testid={UIElements.CATALOG_EMPTY_STATE}
-            mt="xl"
-            p="xl"
-            ta="center"
-            withBorder
-          >
-            <Title order={2}>Пока нет доступных типов встреч</Title>
-            <Text c="dimmed" mt="xs">
-              Вернитесь позже — владелец ещё не добавил варианты.
-            </Text>
-          </Paper>
+          <EmptyState
+            description="Вернитесь позже — владелец календаря ещё не добавил варианты."
+            testId={UIElements.CATALOG_EMPTY_STATE}
+            title="Пока нет доступных типов встреч"
+          />
         ) : null}
         {meetingTypes.data?.length ? (
-          <SimpleGrid
-            cols={{ base: 1, sm: 2 }}
-            data-testid={UIElements.CATALOG_MEETING_TYPE_LIST}
-            mt="xl"
-          >
+          <SimpleGrid cols={{ base: 1, sm: 2 }} data-testid={UIElements.CATALOG_MEETING_TYPE_LIST}>
             {meetingTypes.data.map((meetingType) => (
               <MeetingTypeCard key={meetingType.id} meetingType={meetingType} />
             ))}
           </SimpleGrid>
         ) : null}
-      </Container>
+      </main>
     </Page>
+  );
+}
+
+function BookingSummary({
+  dateLabel,
+  meetingType,
+  timeLabel,
+}: {
+  readonly meetingType: MeetingType;
+  readonly dateLabel?: string | undefined;
+  readonly timeLabel?: string | undefined;
+}) {
+  return (
+    <Paper
+      className={componentClasses.summaryPanel}
+      data-testid={UIElements.BOOKING_SUMMARY}
+      p="lg"
+      radius="lg"
+      withBorder
+    >
+      <Stack gap="md">
+        <div>
+          <Badge color="orange" variant="light">
+            {meetingType.durationMinutes} минут
+          </Badge>
+          <Title mt="sm" order={2}>
+            {meetingType.title}
+          </Title>
+          <Text c="dimmed" mt={6} size="sm">
+            {meetingType.description}
+          </Text>
+        </div>
+        <Divider />
+        <Stack gap={5}>
+          <Text c="dimmed" size="xs" tt="uppercase">
+            Выбранная дата
+          </Text>
+          <Text fw={600}>{dateLabel ?? 'Дата не выбрана'}</Text>
+          <Text c="dimmed" mt="xs" size="xs" tt="uppercase">
+            Выбранное время
+          </Text>
+          <Text fw={600}>{timeLabel ?? 'Время не выбрано'}</Text>
+        </Stack>
+      </Stack>
+    </Paper>
   );
 }
 
@@ -282,124 +453,155 @@ function BookingScreen() {
     (slot) => slot.startsAt === selectedStart && slot.status === 'available',
   );
 
-  const chooseDate = (date: string) => setSearchParams({ date });
-  const chooseSlot = (startsAt: string) =>
-    setSearchParams({ date: currentDate?.date ?? '', startsAt });
-
-  if (meetingType.isPending || availability.isPending)
+  if (meetingType.isPending || availability.isPending) {
     return (
       <Page>
-        <Loading />
+        <main className={screenClasses.main}>
+          <Loading />
+        </main>
       </Page>
     );
+  }
   if (meetingType.isError || availability.isError || !meetingType.data || !availability.data) {
     return (
       <Page>
-        <Container className={classes.main}>
+        <main className={screenClasses.main}>
           <Alert color="red">Не удалось загрузить расписание.</Alert>
-        </Container>
+        </main>
       </Page>
     );
   }
 
+  const dateAvailability = new Map(availability.data.dates.map((date) => [date.date, date]));
+  const chooseDate = (date: string | null) => date && setSearchParams({ date });
+  const chooseSlot = (startsAt: string) =>
+    setSearchParams({ date: currentDate?.date ?? '', startsAt });
+
   return (
     <Page>
-      <Container className={classes.main} data-testid={UIElements.BOOKING_SCREEN} size="lg">
-        <Title order={1}>Выберите дату и время</Title>
-        <Text c="dimmed" mt="xs">
-          Доступны будние дни в ближайшие 14 дней.
-        </Text>
-        {searchParams.get('conflict') === '1' ? (
-          <Alert
-            color="orange"
-            data-testid={UIElements.BOOKING_CONFLICT_ALERT}
-            mt="lg"
-            title="Слот уже занят"
-          >
-            Это время успел выбрать другой гость. Выберите новый свободный слот.
-          </Alert>
-        ) : null}
-        <SimpleGrid cols={{ base: 1, md: 3 }} mt="xl">
-          <Paper data-testid={UIElements.BOOKING_SUMMARY} p="lg" radius="lg" withBorder>
-            <Stack gap="xs">
-              <Title order={2}>{meetingType.data.title}</Title>
-              <Text c="dimmed">{meetingType.data.description}</Text>
-              <Group gap="xs">
-                <IconClock size={17} />
-                <Text>{meetingType.data.durationMinutes} минут</Text>
-              </Group>
-              <Text data-testid={UIElements.BOOKING_TIMEZONE_LABEL} size="sm">
-                Время по Москве
-              </Text>
-            </Stack>
-          </Paper>
-          <Paper data-testid={UIElements.BOOKING_DATE_CALENDAR} p="lg" radius="lg" withBorder>
-            <Text fw={700} mb="md">
-              Дата
-            </Text>
-            <Stack gap="xs">
-              {availability.data.dates.map((date) => (
-                <Button
-                  disabled={!date.bookable}
-                  key={date.date}
-                  onClick={() => chooseDate(date.date)}
-                  variant={date.date === currentDate?.date ? 'filled' : 'light'}
-                >
-                  {new Intl.DateTimeFormat('ru-RU', {
-                    day: 'numeric',
-                    month: 'short',
-                    timeZone: 'UTC',
-                  }).format(new Date(`${date.date}T12:00:00Z`))}
-                </Button>
-              ))}
-            </Stack>
-          </Paper>
-          <Paper data-testid={UIElements.BOOKING_SLOT_LIST} p="lg" radius="lg" withBorder>
-            <Text fw={700} mb="md">
-              Свободное время
-            </Text>
-            {currentDate && currentDate.slots.some((slot) => slot.status === 'available') ? (
-              <SimpleGrid cols={2}>
-                {currentDate.slots
-                  .filter((slot) => slot.status === 'available')
-                  .map((slot) => (
-                    <Button
-                      data-testid={UIElements.BOOKING_SLOT_BUTTON}
-                      key={slot.startsAt}
-                      onClick={() => chooseSlot(slot.startsAt)}
-                      variant={slot.startsAt === selectedSlot?.startsAt ? 'filled' : 'light'}
-                    >
-                      {formatMoscowTimeRange(slot.startsAt, slot.endsAt)}
-                    </Button>
-                  ))}
-              </SimpleGrid>
+      <main className={screenClasses.main} data-testid={UIElements.BOOKING_SCREEN}>
+        <div className={screenClasses.sectionHeader}>
+          <Title order={1}>Выберите дату и время</Title>
+          <Text c="dimmed" mt={6}>
+            Доступны будние дни в ближайшие 14 дней.
+          </Text>
+        </div>
+        <Stack gap="md">
+          {searchParams.get('conflict') === '1' ? (
+            <StatusAlert
+              kind="conflict"
+              message="Это время уже заняли. Выберите другой слот"
+              testId={UIElements.BOOKING_CONFLICT_ALERT}
+            />
+          ) : null}
+          <div className={screenClasses.bookingGrid}>
+            <BookingSummary
+              dateLabel={
+                currentDate ? formatMoscowDate(`${currentDate.date}T12:00:00Z`) : undefined
+              }
+              meetingType={meetingType.data}
+              timeLabel={
+                selectedSlot
+                  ? formatMoscowTimeRange(selectedSlot.startsAt, selectedSlot.endsAt)
+                  : undefined
+              }
+            />
+            <Paper
+              className={componentClasses.calendarPanel}
+              data-testid={UIElements.BOOKING_DATE_CALENDAR}
+              p="lg"
+              radius="lg"
+              withBorder
+            >
+              <Stack gap="md">
+                <div>
+                  <Title order={3}>Выберите дату</Title>
+                  <Group c="dimmed" gap={6} mt={4}>
+                    <IconMapPin size={15} />
+                    <Text data-testid={UIElements.BOOKING_TIMEZONE_LABEL} size="sm">
+                      Время указано по Москве
+                    </Text>
+                  </Group>
+                </div>
+                <DatePicker
+                  defaultDate={availability.data.windowStartsOn}
+                  excludeDate={(date) => !dateAvailability.get(date)?.bookable}
+                  firstDayOfWeek={1}
+                  locale="ru"
+                  maxDate={availability.data.windowEndsOn}
+                  minDate={availability.data.windowStartsOn}
+                  onChange={chooseDate}
+                  size="md"
+                  value={currentDate?.date ?? null}
+                />
+              </Stack>
+            </Paper>
+            {currentDate?.slots.some((slot) => slot.status === 'available') ? (
+              <Paper
+                className={componentClasses.slotPanel}
+                data-testid={UIElements.BOOKING_SLOT_LIST}
+                p="lg"
+                radius="lg"
+                withBorder
+              >
+                <Stack gap="md">
+                  <Title order={3}>Доступное время</Title>
+                  <Stack className={componentClasses.slotList} gap="xs">
+                    {currentDate.slots.map((slot) => {
+                      const occupied = slot.status === 'occupied';
+                      const selected = selectedSlot?.startsAt === slot.startsAt;
+                      return (
+                        <Button
+                          className={`${componentClasses.slotButton} ${occupied ? componentClasses.occupiedSlot : ''}`}
+                          color={selected ? 'orange' : 'gray'}
+                          data-testid={UIElements.BOOKING_SLOT_BUTTON}
+                          disabled={occupied}
+                          fullWidth
+                          justify="space-between"
+                          key={slot.startsAt}
+                          onClick={() => chooseSlot(slot.startsAt)}
+                          variant={selected ? 'filled' : 'outline'}
+                        >
+                          <span>{formatMoscowTimeRange(slot.startsAt, slot.endsAt)}</span>
+                          <Text component="span" fw={600} size="xs">
+                            {occupied ? 'Занято' : selected ? 'Выбрано' : 'Свободно'}
+                          </Text>
+                        </Button>
+                      );
+                    })}
+                  </Stack>
+                </Stack>
+              </Paper>
             ) : (
-              <Text c="dimmed" data-testid={UIElements.BOOKING_NO_SLOTS_STATE}>
-                На эту дату свободного времени нет.
-              </Text>
+              <EmptyState
+                description="Попробуйте выбрать другой день."
+                testId={UIElements.BOOKING_NO_SLOTS_STATE}
+                title="На эту дату свободного времени нет"
+              />
             )}
-          </Paper>
-        </SimpleGrid>
-        <Group justify="space-between" mt="xl">
-          <Button
-            data-testid={UIElements.BOOKING_BACK_BUTTON}
-            onClick={() => navigate(APP_PATHS.catalog)}
-            variant="default"
-          >
-            Назад
-          </Button>
-          <Button
-            data-testid={UIElements.BOOKING_CONTINUE_BUTTON}
-            disabled={!selectedSlot}
-            onClick={() =>
-              selectedSlot && navigate(guestDetailsPath(meetingTypeId, selectedSlot.startsAt))
-            }
-            rightSection={<IconArrowRight size={17} />}
-          >
-            Продолжить
-          </Button>
-        </Group>
-      </Container>
+          </div>
+          <Group justify="space-between" mt="sm">
+            <Button
+              data-testid={UIElements.BOOKING_BACK_BUTTON}
+              onClick={() => navigate(APP_PATHS.catalog)}
+              variant="default"
+            >
+              Назад
+            </Button>
+            <Button
+              color="orange"
+              data-testid={UIElements.BOOKING_CONTINUE_BUTTON}
+              disabled={!selectedSlot}
+              onClick={() =>
+                selectedSlot && navigate(guestDetailsPath(meetingTypeId, selectedSlot.startsAt))
+              }
+              rightSection={<IconArrowRight size={17} />}
+            >
+              Продолжить
+            </Button>
+          </Group>
+        </Stack>
+      </main>
     </Page>
   );
 }
@@ -450,7 +652,14 @@ function GuestDetailsScreen() {
     };
     const parsed = GuestDetails.safeParse(normalized);
     if (!parsed.success) {
-      form.setErrors(zodFieldErrors(parsed));
+      const errors = zodFieldErrors(parsed);
+      form.setErrors({
+        ...(errors.name ? { name: values.name.trim() ? 'Проверьте имя' : 'Укажите имя' } : {}),
+        ...(errors.email
+          ? { email: values.email.trim() ? 'Укажите корректный email' : 'Укажите email' }
+          : {}),
+        ...(errors.note ? { note: 'Проверьте заметку' } : {}),
+      });
       return;
     }
     try {
@@ -479,91 +688,117 @@ function GuestDetailsScreen() {
     }
   });
 
-  if (meetingType.isPending || availability.isPending)
+  if (meetingType.isPending || availability.isPending) {
     return (
       <Page>
-        <Loading />
+        <main className={screenClasses.main}>
+          <Loading />
+        </main>
       </Page>
     );
+  }
   if (!meetingType.data || !slot) return <Navigate replace to={bookingPath(meetingTypeId)} />;
 
   return (
     <Page>
-      <Container className={classes.main} data-testid={UIElements.GUEST_DETAILS_SCREEN} size="md">
-        <Title order={1}>Завершите запись</Title>
-        <Text c="dimmed" mt="xs">
-          Оставьте контакты — аккаунт создавать не нужно.
-        </Text>
-        {Object.keys(form.errors).length ? (
-          <Alert color="red" data-testid={UIElements.GUEST_FORM_ERROR_ALERT} mt="lg">
-            Проверьте обязательные поля.
-          </Alert>
-        ) : null}
-        {mutation.isError &&
-        !(mutation.error instanceof ApiRequestError && mutation.error.code === 'SLOT_CONFLICT') ? (
-          <Alert color="red" data-testid={UIElements.GUEST_SUBMIT_ERROR_ALERT} mt="lg">
-            <Group justify="space-between">
-              <Text>Не удалось создать запись. Введённые данные сохранены.</Text>
-              <Button
-                data-testid={UIElements.GUEST_RETRY_BUTTON}
-                onClick={() => submit()}
-                size="xs"
-              >
-                Повторить
-              </Button>
-            </Group>
-          </Alert>
-        ) : null}
-        <SimpleGrid cols={{ base: 1, sm: 2 }} mt="xl">
-          <Paper component="form" onSubmit={submit} p="xl" radius="lg" withBorder>
-            <Stack>
-              <TextInput
-                data-testid={UIElements.GUEST_NAME_INPUT}
-                label="Имя"
-                required
-                {...form.getInputProps('name')}
-              />
-              <TextInput
-                data-testid={UIElements.GUEST_EMAIL_INPUT}
-                label="Email"
-                required
-                type="email"
-                {...form.getInputProps('email')}
-              />
-              <Textarea
-                data-testid={UIElements.GUEST_NOTE_INPUT}
-                label="Заметка"
-                {...form.getInputProps('note')}
-              />
-              <Group justify="space-between" mt="sm">
-                <Button
-                  data-testid={UIElements.GUEST_BACK_BUTTON}
-                  onClick={() => navigate(-1)}
-                  type="button"
-                  variant="default"
-                >
-                  Назад
-                </Button>
-                <Button
-                  data-testid={UIElements.GUEST_SUBMIT_BUTTON}
-                  loading={mutation.isPending}
-                  type="submit"
-                >
-                  Подтвердить
-                </Button>
-              </Group>
-            </Stack>
-          </Paper>
-          <Paper data-testid={UIElements.BOOKING_SUMMARY} p="xl" radius="lg" withBorder>
-            <Title order={2}>{meetingType.data.title}</Title>
-            <Text mt="md">{formatMoscowDate(slot.startsAt)}</Text>
-            <Text fw={700}>{formatMoscowTimeRange(slot.startsAt, slot.endsAt)} · Москва</Text>
-            <Text c="dimmed" mt="xs">
-              {meetingType.data.durationMinutes} минут
-            </Text>
-          </Paper>
-        </SimpleGrid>
-      </Container>
+      <main className={screenClasses.main} data-testid={UIElements.GUEST_DETAILS_SCREEN}>
+        <div className={screenClasses.sectionHeader}>
+          <Title order={1}>Завершите запись</Title>
+          <Text c="dimmed" mt={6}>
+            Проверьте время и представьтесь владельцу календаря.
+          </Text>
+        </div>
+        <Stack gap="md">
+          {Object.keys(form.errors).length ? (
+            <StatusAlert
+              kind="error"
+              message={Object.values(form.errors).map(String).join('. ')}
+              testId={UIElements.GUEST_FORM_ERROR_ALERT}
+            />
+          ) : null}
+          {mutation.isError &&
+          !(
+            mutation.error instanceof ApiRequestError && mutation.error.code === 'SLOT_CONFLICT'
+          ) ? (
+            <StatusAlert
+              actionLabel="Повторить"
+              actionTestId={UIElements.GUEST_RETRY_BUTTON}
+              kind="error"
+              message="Не удалось создать запись. Попробуйте ещё раз"
+              onAction={() => submit()}
+              testId={UIElements.GUEST_SUBMIT_ERROR_ALERT}
+            />
+          ) : null}
+          <div className={screenClasses.formGrid}>
+            <Paper
+              className={componentClasses.formPanel}
+              component="form"
+              noValidate
+              onSubmit={submit}
+              p="xl"
+              radius="lg"
+              withBorder
+            >
+              <Stack gap="md">
+                <div>
+                  <Title order={2}>Ваши данные</Title>
+                  <Text c="dimmed" mt={4} size="sm">
+                    Мы используем их только для этой встречи.
+                  </Text>
+                </div>
+                <TextInput
+                  data-testid={UIElements.GUEST_NAME_INPUT}
+                  label="Имя"
+                  maxLength={100}
+                  placeholder="Анна"
+                  required
+                  {...form.getInputProps('name')}
+                />
+                <TextInput
+                  data-testid={UIElements.GUEST_EMAIL_INPUT}
+                  label="Email"
+                  maxLength={254}
+                  placeholder="anna@example.ru"
+                  required
+                  type="email"
+                  {...form.getInputProps('email')}
+                />
+                <Textarea
+                  data-testid={UIElements.GUEST_NOTE_INPUT}
+                  label="Заметка"
+                  maxLength={1000}
+                  minRows={4}
+                  placeholder="Необязательно"
+                  {...form.getInputProps('note')}
+                />
+                <Group justify="space-between" mt="sm">
+                  <Button
+                    data-testid={UIElements.GUEST_BACK_BUTTON}
+                    onClick={() => navigate(-1)}
+                    type="button"
+                    variant="default"
+                  >
+                    Назад ко времени
+                  </Button>
+                  <Button
+                    color="orange"
+                    data-testid={UIElements.GUEST_SUBMIT_BUTTON}
+                    loading={mutation.isPending}
+                    type="submit"
+                  >
+                    Подтвердить запись
+                  </Button>
+                </Group>
+              </Stack>
+            </Paper>
+            <BookingSummary
+              dateLabel={formatMoscowDate(slot.startsAt)}
+              meetingType={meetingType.data}
+              timeLabel={formatMoscowTimeRange(slot.startsAt, slot.endsAt)}
+            />
+          </div>
+        </Stack>
+      </main>
     </Page>
   );
 }
@@ -573,84 +808,95 @@ function BookingSuccessScreen() {
   const state = location.state as BookingSuccessState | null;
   const booking = state?.booking;
   if (!booking) return <Navigate replace to={APP_PATHS.catalog} />;
+
   return (
     <Page>
-      <Container className={classes.main} data-testid={UIElements.BOOKING_SUCCESS_SCREEN} size="sm">
-        <Paper p={40} radius="xl" ta="center" withBorder>
-          <ThemeIcon color="green" radius="xl" size={72} variant="light">
-            <IconCheck size={36} />
-          </ThemeIcon>
-          <Title mt="lg" order={1}>
-            Вы записаны
-          </Title>
-          <Text c="dimmed" mt="xs">
-            {booking.guest.name}, встреча сохранена.
-          </Text>
-          <Paper
-            data-testid={UIElements.BOOKING_SUCCESS_DETAILS}
-            mt="xl"
-            p="lg"
-            radius="lg"
-            withBorder
-          >
-            <Text fw={700}>
-              {booking.meetingType.title} · {booking.meetingType.durationMinutes} минут
-            </Text>
-            <Text>
-              {formatMoscowDate(booking.startsAt)},{' '}
-              {formatMoscowTimeRange(booking.startsAt, booking.endsAt)}
-            </Text>
-            <Text c="dimmed">
-              Гость: {booking.guest.name} · Владелец: {booking.owner.displayName}
-            </Text>
-          </Paper>
-          <Group justify="center" mt="xl">
-            <Button
-              component={Link}
-              data-testid={UIElements.SUCCESS_BOOK_AGAIN_BUTTON}
-              to={bookingPath(booking.meetingType.id)}
-            >
-              Записаться ещё
-            </Button>
-            <Button
-              component={Link}
-              data-testid={UIElements.SUCCESS_HOME_LINK}
-              to={APP_PATHS.home}
-              variant="default"
-            >
-              На главную
-            </Button>
-          </Group>
+      <main className={screenClasses.main} data-testid={UIElements.BOOKING_SUCCESS_SCREEN}>
+        <Paper className={screenClasses.successCard} p={40} radius="xl" withBorder>
+          <Stack align="center" gap="lg" ta="center">
+            <ThemeIcon className={screenClasses.successIcon} radius="xl" size={72} variant="light">
+              <IconCheck size={36} stroke={2.5} />
+            </ThemeIcon>
+            <div>
+              <Title order={1}>Вы записаны</Title>
+              <Text c="dimmed" mt={8}>
+                {booking.guest.name}, встреча добавлена в календарь.
+              </Text>
+            </div>
+            <Paper data-testid={UIElements.BOOKING_SUCCESS_DETAILS} p="lg" radius="lg" withBorder>
+              <Stack gap="xs">
+                <Group gap="xs" justify="center">
+                  <IconCalendarCheck size={18} />
+                  <Text fw={700}>
+                    {booking.meetingType.title} · {booking.meetingType.durationMinutes} минут
+                  </Text>
+                </Group>
+                <Group c="dimmed" gap="xs" justify="center">
+                  <IconClock size={17} />
+                  <Text>
+                    {formatMoscowDate(booking.startsAt)},{' '}
+                    {formatMoscowTimeRange(booking.startsAt, booking.endsAt)} · Москва
+                  </Text>
+                </Group>
+                <Text c="dimmed" size="sm">
+                  Гость: {booking.guest.name} · Владелец: {booking.owner.displayName}
+                </Text>
+              </Stack>
+            </Paper>
+            <Group justify="center">
+              <Button
+                color="orange"
+                component={Link}
+                data-testid={UIElements.SUCCESS_BOOK_AGAIN_BUTTON}
+                to={bookingPath(booking.meetingType.id)}
+              >
+                Записаться ещё
+              </Button>
+              <Button
+                component={Link}
+                data-testid={UIElements.SUCCESS_HOME_LINK}
+                to={APP_PATHS.home}
+                variant="default"
+              >
+                На главную
+              </Button>
+            </Group>
+          </Stack>
         </Paper>
-      </Container>
+      </main>
     </Page>
   );
 }
 
-function AdminNavigation() {
+function AdminNavigation({ active }: { readonly active: 'meeting-types' | 'bookings' }) {
   return (
-    <Paper className={classes.adminNavigation} data-testid={UIElements.ADMIN_SHELL} radius={0}>
-      <Container size="lg">
-        <Group>
-          <NavLink
-            component={Link}
-            data-testid={UIElements.ADMIN_MEETING_TYPES_TAB}
-            label="Типы встреч"
-            to={APP_PATHS.adminMeetingTypes}
-          />
-          <NavLink
-            component={Link}
-            data-testid={UIElements.ADMIN_BOOKINGS_TAB}
-            label="Предстоящие встречи"
-            to={APP_PATHS.adminBookings}
-          />
-        </Group>
-      </Container>
-    </Paper>
+    <Box className={componentClasses.adminNav} data-testid={UIElements.ADMIN_SHELL}>
+      <Group gap="xs" maw="var(--calendar-content-width)" mx="auto" px="md" py="sm">
+        <Button
+          color="orange"
+          component={Link}
+          data-testid={UIElements.ADMIN_MEETING_TYPES_TAB}
+          to={APP_PATHS.adminMeetingTypes}
+          variant={active === 'meeting-types' ? 'filled' : 'subtle'}
+        >
+          Типы встреч
+        </Button>
+        <Button
+          color="orange"
+          component={Link}
+          data-testid={UIElements.ADMIN_BOOKINGS_TAB}
+          to={APP_PATHS.adminBookings}
+          variant={active === 'bookings' ? 'filled' : 'subtle'}
+        >
+          Предстоящие встречи
+        </Button>
+      </Group>
+    </Box>
   );
 }
 
 function AdminMeetingTypesScreen() {
+  const navigate = useNavigate();
   const query = useListMeetingTypes<MeetingType[]>({
     query: {
       queryKey: getListMeetingTypesQueryKey(),
@@ -659,20 +905,20 @@ function AdminMeetingTypesScreen() {
     },
   });
   const [searchParams] = useSearchParams();
+
   return (
     <Page>
-      <AdminNavigation />
-      <Container
-        className={classes.adminMain}
-        data-testid={UIElements.ADMIN_MEETING_TYPES_SCREEN}
-        size="lg"
-      >
-        <Group align="flex-end" justify="space-between">
+      <AdminNavigation active="meeting-types" />
+      <main className={screenClasses.main} data-testid={UIElements.ADMIN_MEETING_TYPES_SCREEN}>
+        <Group align="flex-end" className={screenClasses.sectionHeader} justify="space-between">
           <div>
             <Title order={1}>Типы встреч</Title>
-            <Text c="dimmed">Форматы из публичного каталога.</Text>
+            <Text c="dimmed" mt={6}>
+              Форматы, которые гости могут выбрать в публичном каталоге.
+            </Text>
           </div>
           <Button
+            color="orange"
             component={Link}
             data-testid={UIElements.ADMIN_CREATE_MEETING_TYPE_BUTTON}
             leftSection={<IconPlus size={17} />}
@@ -681,56 +927,55 @@ function AdminMeetingTypesScreen() {
             Создать тип встречи
           </Button>
         </Group>
-        {searchParams.get('created') === '1' ? (
-          <Alert
-            color="green"
-            data-testid={UIElements.ADMIN_MEETING_TYPE_CREATED_NOTIFICATION}
-            mt="lg"
-          >
-            Тип встречи создан и опубликован.
-          </Alert>
-        ) : null}
-        {query.isPending ? <Loading /> : null}
-        {query.data?.length === 0 ? (
-          <Paper
-            className={classes.statePanel}
-            data-testid={UIElements.ADMIN_MEETING_TYPES_EMPTY_STATE}
-            mt="xl"
-            p="xl"
-            ta="center"
-            withBorder
-          >
-            <Title order={2}>Типы встреч ещё не созданы</Title>
-          </Paper>
-        ) : null}
-        {query.data?.length ? (
-          <SimpleGrid
-            cols={{ base: 1, sm: 2 }}
-            data-testid={UIElements.ADMIN_MEETING_TYPES_LIST}
-            mt="xl"
-          >
-            {query.data.map((type) => (
-              <Card
-                data-testid={UIElements.ADMIN_MEETING_TYPE_CARD}
-                key={type.id}
-                padding="lg"
-                withBorder
-              >
-                <Group justify="space-between">
-                  <Title order={2}>{type.title}</Title>
-                  <Badge>{type.durationMinutes} мин</Badge>
-                </Group>
-                <Text c="dimmed" mt="sm">
-                  {type.description}
-                </Text>
-                <Text mt="md" size="sm">
-                  /{type.id}
-                </Text>
-              </Card>
-            ))}
-          </SimpleGrid>
-        ) : null}
-      </Container>
+        <Stack gap="md">
+          {searchParams.get('created') === '1' ? (
+            <StatusAlert
+              kind="success"
+              message="Тип встречи создан и появился в публичном каталоге."
+              testId={UIElements.ADMIN_MEETING_TYPE_CREATED_NOTIFICATION}
+            />
+          ) : null}
+          {query.isPending ? <Loading /> : null}
+          {query.data?.length === 0 ? (
+            <EmptyState
+              actionLabel="Создать тип встречи"
+              description="Добавьте первый формат, чтобы гости могли записываться."
+              onAction={() => navigate(APP_PATHS.adminCreateMeetingType)}
+              testId={UIElements.ADMIN_MEETING_TYPES_EMPTY_STATE}
+              title="Типы встреч ещё не созданы"
+            />
+          ) : null}
+          {query.data?.length ? (
+            <SimpleGrid cols={{ base: 1, md: 2 }} data-testid={UIElements.ADMIN_MEETING_TYPES_LIST}>
+              {query.data.map((meetingType) => (
+                <Paper
+                  className={componentClasses.adminCard}
+                  data-testid={UIElements.ADMIN_MEETING_TYPE_CARD}
+                  key={meetingType.id}
+                  p="lg"
+                  radius="lg"
+                  withBorder
+                >
+                  <Group align="flex-start" justify="space-between">
+                    <div>
+                      <Title order={3}>{meetingType.title}</Title>
+                      <Text c="dimmed" mt={4} size="sm">
+                        {meetingType.description}
+                      </Text>
+                      <Text c="dimmed" mt="sm" size="xs">
+                        ID: {meetingType.id}
+                      </Text>
+                    </div>
+                    <Badge color="orange" leftSection={<IconClock size={13} />} variant="light">
+                      {meetingType.durationMinutes} мин
+                    </Badge>
+                  </Group>
+                </Paper>
+              ))}
+            </SimpleGrid>
+          ) : null}
+        </Stack>
+      </main>
     </Page>
   );
 }
@@ -750,7 +995,21 @@ function AdminCreateMeetingTypeScreen() {
       description: values.description.trim(),
     });
     if (!parsed.success) {
-      form.setErrors(zodFieldErrors(parsed));
+      const errors = zodFieldErrors(parsed);
+      form.setErrors({
+        ...(errors.id
+          ? {
+              id: values.id.trim()
+                ? 'Используйте латиницу, цифры и дефисы'
+                : 'Укажите идентификатор',
+            }
+          : {}),
+        ...(errors.title ? { title: 'Укажите название' } : {}),
+        ...(errors.description ? { description: 'Укажите описание' } : {}),
+        ...(errors.durationMinutes
+          ? { durationMinutes: 'Длительность должна быть кратна 15 минутам' }
+          : {}),
+      });
       return;
     }
     try {
@@ -763,97 +1022,143 @@ function AdminCreateMeetingTypeScreen() {
   });
   const duplicate =
     mutation.error instanceof ApiRequestError && mutation.error.code === 'DUPLICATE_MEETING_TYPE';
+
   return (
     <Page>
-      <AdminNavigation />
-      <Container
-        className={classes.adminMain}
+      <AdminNavigation active="meeting-types" />
+      <main
+        className={screenClasses.main}
         data-testid={UIElements.ADMIN_CREATE_MEETING_TYPE_SCREEN}
-        size="md"
       >
-        <Title order={1}>Новый тип встречи</Title>
-        <Text c="dimmed">Длительность должна быть кратна 15 минутам.</Text>
-        {Object.keys(form.errors).length ? (
-          <Alert color="red" data-testid={UIElements.ADMIN_MEETING_TYPE_FORM_ERROR_ALERT} mt="lg">
-            Проверьте поля формы.
-          </Alert>
-        ) : null}
-        {duplicate ? (
-          <Alert color="red" data-testid={UIElements.ADMIN_MEETING_TYPE_DUPLICATE_ALERT} mt="lg">
-            Тип встречи с таким идентификатором уже существует.
-          </Alert>
-        ) : null}
-        <Paper component="form" mt="xl" onSubmit={submit} p="xl" radius="lg" withBorder>
-          <Stack>
-            <TextInput
-              data-testid={UIElements.ADMIN_MEETING_TYPE_ID_INPUT}
-              description="Латинские буквы, цифры и дефисы"
-              label="Идентификатор"
-              required
-              {...form.getInputProps('id')}
+        <div className={screenClasses.sectionHeader}>
+          <Title order={1}>Новый тип встречи</Title>
+          <Text c="dimmed" mt={6}>
+            Задайте понятное название, описание и длительность, кратную 15 минутам.
+          </Text>
+        </div>
+        <Stack gap="md" maw={760}>
+          {Object.keys(form.errors).length ? (
+            <StatusAlert
+              kind="error"
+              message={Object.values(form.errors).map(String).join('. ')}
+              testId={UIElements.ADMIN_MEETING_TYPE_FORM_ERROR_ALERT}
             />
-            <TextInput
-              data-testid={UIElements.ADMIN_MEETING_TYPE_TITLE_INPUT}
-              label="Название"
-              required
-              {...form.getInputProps('title')}
+          ) : null}
+          {duplicate ? (
+            <StatusAlert
+              kind="error"
+              message="Тип встречи с таким идентификатором уже существует"
+              testId={UIElements.ADMIN_MEETING_TYPE_DUPLICATE_ALERT}
             />
-            <Textarea
-              data-testid={UIElements.ADMIN_MEETING_TYPE_DESCRIPTION_INPUT}
-              label="Описание"
-              required
-              {...form.getInputProps('description')}
-            />
-            <NumberInput
-              data-testid={UIElements.ADMIN_MEETING_TYPE_DURATION_SELECT}
-              label="Длительность, минут"
-              max={540}
-              min={15}
-              required
-              step={15}
-              {...form.getInputProps('durationMinutes')}
-            />
-            <Group justify="space-between">
-              <Button
-                data-testid={UIElements.ADMIN_MEETING_TYPE_CANCEL_BUTTON}
-                onClick={() => navigate(APP_PATHS.adminMeetingTypes)}
-                type="button"
-                variant="default"
-              >
-                Отмена
-              </Button>
-              <Button
-                data-testid={UIElements.ADMIN_MEETING_TYPE_SUBMIT_BUTTON}
-                loading={mutation.isPending}
-                type="submit"
-              >
-                Создать
-              </Button>
-            </Group>
-          </Stack>
-        </Paper>
-      </Container>
+          ) : null}
+          <Paper
+            className={componentClasses.formPanel}
+            component="form"
+            noValidate
+            onSubmit={submit}
+            p="xl"
+            radius="lg"
+            withBorder
+          >
+            <Stack gap="md">
+              <TextInput
+                data-testid={UIElements.ADMIN_MEETING_TYPE_ID_INPUT}
+                description="Латинские буквы, цифры и дефисы, 3–64 символа"
+                label="Идентификатор"
+                maxLength={64}
+                placeholder="consultation"
+                required
+                {...form.getInputProps('id')}
+              />
+              <TextInput
+                data-testid={UIElements.ADMIN_MEETING_TYPE_TITLE_INPUT}
+                label="Название"
+                maxLength={100}
+                placeholder="Консультация"
+                required
+                {...form.getInputProps('title')}
+              />
+              <Textarea
+                data-testid={UIElements.ADMIN_MEETING_TYPE_DESCRIPTION_INPUT}
+                label="Описание"
+                maxLength={500}
+                minRows={4}
+                placeholder="Расскажите гостю, чему посвящена встреча"
+                required
+                {...form.getInputProps('description')}
+              />
+              <NumberInput
+                data-testid={UIElements.ADMIN_MEETING_TYPE_DURATION_SELECT}
+                label="Длительность, минут"
+                max={540}
+                min={15}
+                required
+                step={15}
+                {...form.getInputProps('durationMinutes')}
+              />
+              <Group justify="flex-end" mt="sm">
+                <Button
+                  data-testid={UIElements.ADMIN_MEETING_TYPE_CANCEL_BUTTON}
+                  onClick={() => navigate(APP_PATHS.adminMeetingTypes)}
+                  type="button"
+                  variant="default"
+                >
+                  Отмена
+                </Button>
+                <Button
+                  color="orange"
+                  data-testid={UIElements.ADMIN_MEETING_TYPE_SUBMIT_BUTTON}
+                  loading={mutation.isPending}
+                  type="submit"
+                >
+                  Создать тип встречи
+                </Button>
+              </Group>
+            </Stack>
+          </Paper>
+        </Stack>
+      </main>
     </Page>
   );
 }
 
 function BookingCard({ booking }: { readonly booking: Booking }) {
   return (
-    <Card data-testid={UIElements.ADMIN_BOOKING_CARD} padding="lg" withBorder>
-      <Group align="flex-start" justify="space-between">
-        <div>
-          <Title order={2}>{booking.meetingType.title}</Title>
-          <Text c="dimmed">
-            {booking.guest.name} · {booking.guest.email}
-          </Text>
-          {booking.guest.note ? <Text mt="xs">{booking.guest.note}</Text> : null}
-        </div>
-        <div className={classes.bookingTime}>
-          <Text fw={700}>{formatMoscowDate(booking.startsAt)}</Text>
-          <Text>{formatMoscowTimeRange(booking.startsAt, booking.endsAt)}</Text>
-        </div>
-      </Group>
-    </Card>
+    <Paper
+      className={componentClasses.bookingCard}
+      data-testid={UIElements.ADMIN_BOOKING_CARD}
+      p="lg"
+      radius="lg"
+      withBorder
+    >
+      <Stack gap="md">
+        <Group align="flex-start" justify="space-between">
+          <div>
+            <Title order={3}>{booking.meetingType.title}</Title>
+            <Group c="dimmed" gap={6} mt={5}>
+              <IconCalendarEvent size={16} />
+              <Text size="sm">{formatMoscowDate(booking.startsAt)}</Text>
+            </Group>
+          </div>
+          <Badge color="orange" variant="light">
+            {formatMoscowTimeRange(booking.startsAt, booking.endsAt)}
+          </Badge>
+        </Group>
+        <Group align="flex-start" grow>
+          <Group gap={7} wrap="nowrap">
+            <IconUser size={17} />
+            <Text size="sm">{booking.guest.name}</Text>
+          </Group>
+          <Group gap={7} wrap="nowrap">
+            <IconMail size={17} />
+            <Text size="sm">{booking.guest.email}</Text>
+          </Group>
+        </Group>
+        <Text c={booking.guest.note ? 'dark' : 'dimmed'} size="sm">
+          {booking.guest.note ?? 'Без заметки'}
+        </Text>
+      </Stack>
+    </Paper>
   );
 }
 
@@ -865,37 +1170,33 @@ function AdminBookingsScreen() {
         response.status === 200 ? response.data : failUnexpectedStatus(response.status),
     },
   });
+
   return (
     <Page>
-      <AdminNavigation />
-      <Container
-        className={classes.adminMain}
-        data-testid={UIElements.ADMIN_BOOKINGS_SCREEN}
-        size="lg"
-      >
-        <Title order={1}>Предстоящие встречи</Title>
-        <Text c="dimmed">Все будущие записи по московскому времени.</Text>
+      <AdminNavigation active="bookings" />
+      <main className={screenClasses.main} data-testid={UIElements.ADMIN_BOOKINGS_SCREEN}>
+        <div className={screenClasses.sectionHeader}>
+          <Title order={1}>Предстоящие встречи</Title>
+          <Text c="dimmed" mt={6}>
+            Ближайшие записи в хронологическом порядке, время по Москве.
+          </Text>
+        </div>
         {query.isPending ? <Loading /> : null}
         {query.data?.length === 0 ? (
-          <Paper
-            className={classes.statePanel}
-            data-testid={UIElements.ADMIN_BOOKINGS_EMPTY_STATE}
-            mt="xl"
-            p="xl"
-            ta="center"
-            withBorder
-          >
-            <Title order={2}>Предстоящих встреч пока нет</Title>
-          </Paper>
+          <EmptyState
+            description="Новые записи появятся здесь автоматически."
+            testId={UIElements.ADMIN_BOOKINGS_EMPTY_STATE}
+            title="Предстоящих встреч пока нет"
+          />
         ) : null}
         {query.data?.length ? (
-          <Stack data-testid={UIElements.ADMIN_BOOKINGS_LIST} mt="xl">
+          <div className={screenClasses.adminList} data-testid={UIElements.ADMIN_BOOKINGS_LIST}>
             {query.data.map((booking) => (
               <BookingCard booking={booking} key={booking.id} />
             ))}
-          </Stack>
+          </div>
         ) : null}
-      </Container>
+      </main>
     </Page>
   );
 }

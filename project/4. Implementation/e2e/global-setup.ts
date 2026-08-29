@@ -11,6 +11,7 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
   const app = await buildApp({
     databasePath,
     migrationsDirectory: resolve(import.meta.dirname, '../backend/drizzle'),
+    now: () => new Date('2026-08-11T12:07:00+03:00'),
     staticDirectory: resolve(import.meta.dirname, '../frontend/dist'),
   });
   await app.listen({ host: '127.0.0.1', port: 3000 });

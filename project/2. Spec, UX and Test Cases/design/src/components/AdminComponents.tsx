@@ -2,8 +2,8 @@ import {
   Badge,
   Button,
   Group,
+  NumberInput,
   Paper,
-  Select,
   Stack,
   Text,
   Textarea,
@@ -74,18 +74,16 @@ export function MeetingTypeForm({
           required
           value={values.description}
         />
-        <Select
-          allowDeselect={false}
-          data={['15', '30', '45', '60', '90', '120'].map((duration) => ({
-            label: `${duration} минут`,
-            value: duration,
-          }))}
+        <NumberInput
           data-testid={UIElements.ADMIN_MEETING_TYPE_DURATION_SELECT}
           error={errors.duration}
-          label="Длительность"
-          onChange={(value) => onChange?.('duration', value ?? '30')}
+          label="Длительность, минут"
+          max={540}
+          min={15}
+          onChange={(value) => onChange?.('duration', String(value))}
           required
-          value={values.duration}
+          step={15}
+          value={Number(values.duration)}
         />
         <Group justify="flex-end" mt="sm">
           <Button
