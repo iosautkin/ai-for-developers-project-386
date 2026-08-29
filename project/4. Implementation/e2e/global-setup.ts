@@ -6,8 +6,10 @@ import { buildApp } from '../backend/dist/app.js';
 
 export default async function globalSetup(): Promise<() => Promise<void>> {
   const directory = await mkdtemp(resolve(tmpdir(), 'calendar-e2e-'));
+  const databasePath = resolve(directory, 'e2e.sqlite');
+  process.env.E2E_DATABASE_PATH = databasePath;
   const app = await buildApp({
-    databasePath: resolve(directory, 'e2e.sqlite'),
+    databasePath,
     migrationsDirectory: resolve(import.meta.dirname, '../backend/drizzle'),
     staticDirectory: resolve(import.meta.dirname, '../frontend/dist'),
   });
